@@ -105,6 +105,7 @@ struct PPUPriv {
 	bool cgb;
 	bool cgbDmg;
 	bool weMaster;
+	bool trueColors;
 
 	PPUPriv(NextM0Time &nextM0Time, unsigned char const *oamram, unsigned char const *vram);
 };
@@ -119,6 +120,7 @@ public:
 	unsigned long * bgPalette() { return p_.bgPalette; }
 	bool cgb() const { return p_.cgb; }
 	bool cgbDmg() const { return p_.cgbDmg; }
+	bool trueColors() const { return p_.trueColors; }
 	void doLyCountEvent() { p_.lyCounter.doEvent(); }
 	unsigned long doSpriteMapEvent(unsigned long time) { return p_.spriteMapper.doEvent(time); }
 	PPUFrameBuf const & frameBuf() const { return p_.framebuf; }
@@ -149,6 +151,7 @@ public:
 	void speedChange();
 	unsigned long * spPalette() { return p_.spPalette; }
 	void update(unsigned long cc);
+	void setTrueColors(bool trueColors) { p_.trueColors = trueColors; }
 	void setLayers(unsigned mask) { p_.layersMask = mask; }
 
 private:

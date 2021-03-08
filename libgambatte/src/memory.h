@@ -48,10 +48,10 @@ public:
 	void saveSavedata(char *dest, unsigned long const cc) { cart_.saveSavedata(dest, cc); }
 	void updateInput();
 
-	void setBios(char const *buffer, std::size_t size) {
+	void setBios(unsigned char *buffer, std::size_t size) {
 		delete []bios_;
 		bios_ = new unsigned char[size];
-		memcpy(bios_, buffer, size);
+		std::memcpy(bios_, buffer, size);
 		biosSize_ = size;
 	}
 
@@ -231,7 +231,7 @@ public:
 
 	unsigned long event(unsigned long cycleCounter);
 	unsigned long resetCounters(unsigned long cycleCounter);
-	LoadRes loadROM(char const *romfiledata, unsigned romfilelength, unsigned flags);
+	LoadRes loadROM(std::string const &romfile, unsigned flags);
 
 	void setInputGetter(unsigned (*getInput)()) {
 		getInput_ = getInput;
@@ -276,7 +276,12 @@ public:
 		lcd_.blackScreen();
 	}
 
-	void setCgbPalette(unsigned *lut);
+	//void setCgbPalette(unsigned *lut);
+	
+	void setTrueColors(bool trueColors) {
+		lcd_.setTrueColors(trueColors);
+	}
+	
 	void setTimeMode(bool useCycles, unsigned long const cc) {
 		cart_.setTimeMode(useCycles, cc);
 	}

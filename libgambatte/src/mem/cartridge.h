@@ -25,6 +25,8 @@
 #include "rtc.h"
 #include "huc3.h"
 #include "savestate.h"
+#include "scoped_ptr.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -82,7 +84,7 @@ public:
 	int saveSavedataLength();
 	void saveSavedata(char *dest, unsigned long cycleCounter);
 	bool getMemoryArea(int which, unsigned char **data, int *length) const;
-	LoadRes loadROM(char const *romfiledata, unsigned romfilelength, bool cgbMode, bool multicartCompat);
+	LoadRes loadROM(std::string const &romfile, bool cgbMode, bool multicartCompat);
 	char const * romTitle() const { return reinterpret_cast<char const *>(memptrs_.romdata() + 0x134); }
 	bool isMbc2() const { return mbc2_; }
 	bool isHuC3() const { return huc3_.isHuC3(); }

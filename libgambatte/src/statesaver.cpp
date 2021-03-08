@@ -264,7 +264,7 @@ SaverList::SaverList()
 	{ static char const label[] = { b,i,o,s,       NUL }; ADD(mem.biosMode); }
 	{ static char const label[] = { s,t,o,p,p,e,d, NUL }; ADD(mem.stopped); }
 	{ static char const label[] = { h,u,c,NO3,r,a,m, NUL }; ADD(mem.HuC3RAMflag); }
-	{ static char const label[] = { s,g,b,s,y,s,   NUL }; ADDPTR(mem.sgb.systemColors); }
+	/*{ static char const label[] = { s,g,b,s,y,s,   NUL }; ADDPTR(mem.sgb.systemColors); }
 	{ static char const label[] = { s,g,b,c,o,l,s, NUL }; ADDPTR(mem.sgb.colors); }
 	{ static char const label[] = { s,g,b,a,t,t,r, NUL }; ADDPTR(mem.sgb.attributes); }
 	{ static char const label[] = { s,g,b,p,k,t,   NUL }; ADDPTR(mem.sgb.packet); }
@@ -276,7 +276,7 @@ SaverList::SaverList()
 	{ static char const label[] = { s,g,b,p,e,n,d, NUL }; ADD(mem.sgb.pending); }
 	{ static char const label[] = { s,g,b,p,c,     NUL }; ADD(mem.sgb.pendingCount); }
 	{ static char const label[] = { s,g,b,m,a,s,k, NUL }; ADD(mem.sgb.mask); }
-	{ static char const label[] = { d,m,g,c,o,l,s, NUL }; ADDPTR(ppu.dmgColorsBgr15); }
+	{ static char const label[] = { d,m,g,c,o,l,s, NUL }; ADDPTR(ppu.dmgColorsBgr15); }*/
 	{ static char const label[] = { b,g,p,         NUL }; ADDPTR(ppu.bgpData); }
 	{ static char const label[] = { o,b,j,p,       NUL }; ADDPTR(ppu.objpData); }
 	{ static char const label[] = { s,p,o,s,b,u,f, NUL }; ADDPTR(ppu.oamReaderBuf); }

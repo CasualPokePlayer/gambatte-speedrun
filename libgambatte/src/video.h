@@ -21,6 +21,7 @@
 
 #include "interruptrequester.h"
 #include "minkeeper.h"
+#include "scoped_ptr.h"
 #include "video/lyc_irq.h"
 #include "video/mstat_irq.h"
 #include "video/next_m0_time.h"
@@ -54,7 +55,8 @@ public:
 	void setStatePtrs(SaveState &state);
 	void loadState(SaveState const &state, unsigned char const *oamram);
 	void setDmgPaletteColor(unsigned palNum, unsigned colorNum, unsigned long rgb32);
-	void setCgbPalette(unsigned *lut);
+	//void setCgbPalette(unsigned *lut);
+	void setTrueColors(bool trueColors);
 	void setVideoBuffer(uint_least32_t *videoBuf, std::ptrdiff_t pitch);
 	void setLayers(unsigned mask) { ppu_.setLayers(mask); }
 	void copyCgbPalettesToDmg();
@@ -64,19 +66,19 @@ public:
 	void dmgBgPaletteChange(unsigned data, unsigned long cycleCounter) {
 		update(cycleCounter);
 		bgpData_[0] = data;
-		setDmgPalette(ppu_.bgPalette(), dmgColorsRgb32_, data);
+		setDmgPalette(ppu_.bgPalette(), dmgColorsBgr15_, data, isTrueColors());
 	}
 
 	void dmgSpPalette1Change(unsigned data, unsigned long cycleCounter) {
 		update(cycleCounter);
 		objpData_[0] = data;
-		setDmgPalette(ppu_.spPalette(), dmgColorsRgb32_ + 4, data);
+		setDmgPalette(ppu_.spPalette(), dmgColorsBgr15_ + 4, data, isTrueColors());
 	}
 
 	void dmgSpPalette2Change(unsigned data, unsigned long cycleCounter) {
 		update(cycleCounter);
 		objpData_[1] = data;
-		setDmgPalette(ppu_.spPalette() + 4, dmgColorsRgb32_ + 8, data);
+		setDmgPalette(ppu_.spPalette() + 4, dmgColorsBgr15_ + 8, data, isTrueColors());
 	}
 
 	void cgbBgColorChange(unsigned index, unsigned data, unsigned long cycleCounter) {
@@ -150,6 +152,7 @@ public:
 	bool isCgb() const { return ppu_.cgb(); }
 	bool isCgbDmg() const { return ppu_.cgbDmg(); }
 	bool isDoubleSpeed() const { return ppu_.lyCounter().isDoubleSpeed(); }
+	bool isTrueColors() const { return ppu_.trueColors(); }
 
 	unsigned long *bgPalette() { return ppu_.bgPalette(); }
 	unsigned long *spPalette() { return ppu_.spPalette(); }
@@ -220,7 +223,7 @@ public:
 	};
 
 	PPU ppu_;
-	unsigned long dmgColorsRgb32_[3 * 4];
+	unsigned short dmgColorsBgr15_[3 * 4];
 	unsigned long cgbColorsRgb32_[32768];
 	unsigned char  bgpData_[2 * max_num_palettes * num_palette_entries];
 	unsigned char objpData_[2 * max_num_palettes * num_palette_entries];
@@ -232,11 +235,12 @@ public:
 	bool vramHasBeenExactlyRead = false;
 
 	static void setDmgPalette(unsigned long palette[],
-	                          unsigned long const dmgColors[],
-	                          unsigned data);
+	                          unsigned short const dmgColors[],
+	                          unsigned data,
+	                          bool trueColor);
 
-	unsigned long gbcToRgb32(const unsigned bgr15);
-	void doCgbColorChange(unsigned char *const pdata, unsigned long *const palette, unsigned index, const unsigned data);
+	//unsigned long gbcToRgb32(const unsigned bgr15);
+	//void doCgbColorChange(unsigned char *const pdata, unsigned long *const palette, unsigned index, const unsigned data);
 	void refreshPalettes();
 	void setDBuffer();
 	void doMode2IrqEvent();

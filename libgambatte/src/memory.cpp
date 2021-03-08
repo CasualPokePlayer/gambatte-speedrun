@@ -1259,11 +1259,11 @@ void Memory::nontrivial_write(unsigned const p, unsigned const data, unsigned lo
 		ioamhram_[p - mm_oam_begin] = data;
 }
 
-LoadRes Memory::loadROM(char const *romfiledata, unsigned romfilelength, unsigned const flags) {
+LoadRes Memory::loadROM(std::string const &romfile, unsigned const flags) {
 	bool const cgbMode = flags & GB::LoadFlag::CGB_MODE;
 	bool const multicartCompat = flags & GB::LoadFlag::MULTICART_COMPAT;
 
-	if (LoadRes const fail = cart_.loadROM(romfiledata, romfilelength, cgbMode, multicartCompat))
+	if (LoadRes const fail = cart_.loadROM(romfile, cgbMode, multicartCompat))
 		return fail;
 
 	psg_.init(cart_.isCgb());
@@ -1279,9 +1279,9 @@ std::size_t Memory::fillSoundBuffer(unsigned long cc) {
 	return psg_.fillBuffer();
 }
 
-void Memory::setCgbPalette(unsigned *lut) {
+/*void Memory::setCgbPalette(unsigned *lut) {
 	lcd_.setCgbPalette(lut);
-}
+}*/
 
 bool Memory::getMemoryArea(int which, unsigned char **data, int *length) {
 	if (!data || !length)

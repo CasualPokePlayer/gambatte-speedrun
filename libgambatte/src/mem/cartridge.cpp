@@ -17,11 +17,15 @@
 //
 
 #include "cartridge.h"
+#include "file/file.h"
 #include "../savestate.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <zlib.h>
+#include <stdio.h>
 
 using namespace gambatte;
 
@@ -768,7 +772,20 @@ static unsigned numRambanksFromH14x(unsigned char h147, unsigned char h149) {
 	return 4;
 }
 
-LoadRes Cartridge::loadROM(char const *romfiledata, unsigned romfilelength, bool const cgbMode, bool const multicartCompat) {
+LoadRes Cartridge::loadROM(std::string const &romfile,
+                           bool const cgbMode,
+                           bool const multicartCompat)
+{
+	
+	if (romfile.empty()) {
+		mbc_.reset();
+		return LOADRES_IO_ERROR;
+	}
+	
+	scoped_ptr<File> const rom(newFileInstance(romfile));
+	if (rom->fail())
+		return LOADRES_IO_ERROR;
+
 	enum Cartridgetype { type_plain,
 	                     type_mbc1,
 	                     type_mbc2,
@@ -784,10 +801,7 @@ LoadRes Cartridge::loadROM(char const *romfiledata, unsigned romfilelength, bool
 
 	{
 		unsigned char header[0x150];
-		if (romfilelength >= sizeof header)
-			std::memcpy(header, romfiledata, sizeof header);
-		else
-			return LOADRES_IO_ERROR;
+		rom->read(reinterpret_cast<char *>(header), sizeof header);
 
 		switch (header[0x0147]) {
 		case 0x00: type = type_plain; break;
@@ -848,7 +862,8 @@ LoadRes Cartridge::loadROM(char const *romfiledata, unsigned romfilelength, bool
 		rambanks = numRambanksFromH14x(header[0x147], header[0x149]);
 		cgb = cgbMode;
 	}
-	std::size_t const filesize = romfilelength;
+	
+	std::size_t const filesize = rom->size();
 	rombanks = std::max(pow2ceil(filesize / rombank_size()), 2u);
 
 	if (multicartCompat && type == type_plain && rombanks > 2)
@@ -859,11 +874,15 @@ LoadRes Cartridge::loadROM(char const *romfiledata, unsigned romfilelength, bool
 	rtc_.set(false, 0);
 	huc3_.set(false);
 	
-	std::memcpy(memptrs_.romdata(), romfiledata, (filesize / rombank_size() * rombank_size()));
+	rom->rewind();
+	rom->read(reinterpret_cast<char*>(memptrs_.romdata()), filesize / rombank_size() * rombank_size());
 	std::memset(memptrs_.romdata() + filesize / rombank_size() * rombank_size(),
 	            0xFF,
 	            (rombanks - filesize / rombank_size()) * rombank_size());
 	enforce8bit(memptrs_.romdata(), rombanks * rombank_size());
+	
+	if (rom->fail())
+		return LOADRES_IO_ERROR;
 
 	switch (type) {
 	case type_plain: mbc_.reset(new Mbc0(memptrs_)); break;

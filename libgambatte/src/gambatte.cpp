@@ -20,8 +20,13 @@
 #include "cpu.h"
 #include "initstate.h"
 #include "savestate.h"
+#include "state_osd_elements.h"
+#include "statesaver.h"
+#include "file/file.h"
+
 #include <cstring>
 #include <sstream>
+#include <zlib.h>
 
 namespace gambatte {
 
@@ -43,13 +48,18 @@ GB::~GB() {
 	delete p_;
 }
 
-std::ptrdiff_t GB::runFor(gambatte::uint_least32_t *const soundBuf, std::size_t &samples) {
+void GB::setLayers(unsigned mask) {
+	p_->cpu.setLayers(mask);
+}
+
+std::ptrdiff_t GB::runFor(gambatte::uint_least32_t *const videoBuf, std::ptrdiff_t const pitch,
+                          gambatte::uint_least32_t *const soundBuf, std::size_t &samples) {
 	if (!p_->cpu.loaded()) {
 		samples = 0;
 		return -1;
 	}
 
-	p_->cpu.setVideoBuffer(p_->vbuff, 160);
+	p_->cpu.setVideoBuffer(videoBuf, pitch);
 	p_->cpu.setSoundBuffer(soundBuf);
 
 	long const cyclesSinceBlit = p_->cpu.runFor(samples * 2);
@@ -57,22 +67,6 @@ std::ptrdiff_t GB::runFor(gambatte::uint_least32_t *const soundBuf, std::size_t 
 	return cyclesSinceBlit >= 0
 	     ? static_cast<std::ptrdiff_t>(samples) - (cyclesSinceBlit >> 1)
 	     : cyclesSinceBlit;
-}
-
-void GB::setLayers(unsigned mask) {
-	p_->cpu.setLayers(mask);
-}
-
-void GB::blitTo(gambatte::uint_least32_t *videoBuf, std::ptrdiff_t pitch) {
-	gambatte::uint_least32_t *src = p_->vbuff;
-	gambatte::uint_least32_t *dst = videoBuf;
-
-	for (int i = 0; i < 144; i++)
-	{
-		std::memcpy(dst, src, sizeof gambatte::uint_least32_t * 160);
-		src += 160;
-		dst += pitch;
-	}
 }
 
 void GB::reset() {
@@ -128,8 +122,8 @@ void GB::setRtcDivisorOffset(long const rtcDivisorOffset) {
 	p_->cpu.setRtcDivisorOffset(rtcDivisorOffset);
 }
 
-LoadRes GB::load(char const *romfiledata, unsigned romfilelength, unsigned const flags) {
-	LoadRes const loadres = p_->cpu.load(romfiledata, romfilelength, flags);
+LoadRes GB::load(std::string const &romfile, unsigned const flags) {
+	LoadRes const loadres = p_->cpu.load(romfile, flags);
 
 	if (loadres == LOADRES_OK) {
 		SaveState state;
@@ -146,8 +140,33 @@ LoadRes GB::load(char const *romfiledata, unsigned romfilelength, unsigned const
 	return loadres;
 }
 
-int GB::loadBios(char const* biosfiledata, std::size_t size) {
-	p_->cpu.setBios(biosfiledata, size);
+int GB::loadBios(std::string const &biosfile, std::size_t size, unsigned crc) {
+	scoped_ptr<File> const bios(newFileInstance(biosfile));
+	
+	if (bios->fail())
+		return -1;
+	
+	std::size_t sz = bios->size();
+	
+	if (size != 0 && sz != size)
+		return -2;
+	
+	unsigned char newBiosBuffer[sz];
+	bios->read((char *)newBiosBuffer, sz);
+	
+	if (bios->fail())
+		return -1;
+	
+	if (crc != 0) {
+		unsigned char maskedBiosBuffer[sz];
+		std::memcpy(maskedBiosBuffer, newBiosBuffer, sz);
+		maskedBiosBuffer[0xFD] = 0;
+
+		if (crc32(0, maskedBiosBuffer, sz) != crc)
+			return -3;
+	}
+	
+	p_->cpu.setBios(newBiosBuffer, sz);
 	return 0;
 }
 
@@ -198,8 +217,12 @@ void GB::setDmgPaletteColor(int palNum, int colorNum, unsigned long rgb32) {
 	p_->cpu.setDmgPaletteColor(palNum, colorNum, rgb32);
 }
 
-void GB::setCgbPalette(unsigned *lut) {
+/*void GB::setCgbPalette(unsigned *lut) {
 	p_->cpu.setCgbPalette(lut);
+}*/
+
+void GB::setTrueColors(bool trueColors) {
+	p_->cpu.setTrueColors(trueColors);
 }
 
 std::string const GB::romTitle() const {

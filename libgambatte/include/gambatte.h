@@ -64,9 +64,9 @@ public:
 	  * @param flags    ORed combination of LoadFlags.
 	  * @return 0 on success, negative value on failure.
 	  */
-	LoadRes load(char const *romfiledata, unsigned romfilelength, unsigned flags);
+	LoadRes load(std::string const &romfile, unsigned flags = 0);
 
-	int loadBios(char const *biosfiledata, std::size_t size);
+	int loadBios(std::string const &biosfile, std::size_t size = 0, unsigned crc = 0);
 
 	/**
 	  * Emulates until at least 'samples' audio samples are produced in the
@@ -96,9 +96,8 @@ public:
 	  * @return sample offset in audioBuf at which the video frame was completed, or -1
 	  *         if no new video frame was completed.
 	  */
-	std::ptrdiff_t runFor(gambatte::uint_least32_t *soundBuf, std::size_t &samples);
-
-	void blitTo(gambatte::uint_least32_t *videoBuf, std::ptrdiff_t pitch);
+	std::ptrdiff_t runFor(gambatte::uint_least32_t *videoBuf, std::ptrdiff_t pitch,
+	                      gambatte::uint_least32_t *audioBuf, std::size_t &samples);
 
 	void setLayers(unsigned mask);
 
@@ -114,7 +113,10 @@ public:
 	  */
 	void setDmgPaletteColor(int palNum, int colorNum, unsigned long rgb32);
 
-	void setCgbPalette(unsigned *lut);
+	/** Use GBP color conversion instead of GBC-screen approximation. */
+	void setTrueColors(bool trueColors);
+
+	//void setCgbPalette(unsigned *lut);
 
 	/** Sets the callback used for getting input state. */
 	void setInputGetter(unsigned (*getInput)());

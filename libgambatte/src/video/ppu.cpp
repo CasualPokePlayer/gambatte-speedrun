@@ -1618,6 +1618,7 @@ PPUPriv::PPUPriv(NextM0Time &nextM0Time, unsigned char const *const oamram, unsi
 , endx(0)
 , cgb(false)
 , weMaster(false)
+, trueColors(false)
 {
 }
 

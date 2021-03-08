@@ -74,8 +74,8 @@ public:
 		mem_.setLinkCallback(callback);
 	}
 
-	LoadRes load(char const *romfiledata, unsigned romfilelength, unsigned flags) {
-		return mem_.loadROM(romfiledata, romfilelength, flags);
+	LoadRes load(std::string const &romfile, unsigned flags) {
+		return mem_.loadROM(romfile, flags);
 	}
 
 	bool loaded() const { return mem_.loaded(); }
@@ -89,13 +89,16 @@ public:
 		mem_.setDmgPaletteColor(palNum, colorNum, rgb32);
 	}
 
-	void setCgbPalette(unsigned *lut) {
+	/*void setCgbPalette(unsigned *lut) {
 		mem_.setCgbPalette(lut);
-	}
+	}*/
+	
+	void setTrueColors(bool trueColors) { mem_.setTrueColors(trueColors); }
+	
 	void setTimeMode(bool useCycles) { mem_.setTimeMode(useCycles, cycleCounter_); }
 	void setRtcDivisorOffset(long const rtcDivisorOffset) { mem_.setRtcDivisorOffset(rtcDivisorOffset); }
 
-	void setBios(char const *buffer, std::size_t size) { mem_.setBios(buffer, size); }
+	void setBios(unsigned char *buffer, std::size_t size) { mem_.setBios(buffer, size); }
 
 	unsigned char externalRead(unsigned short addr) {return mem_.peek(addr); }
 
