@@ -150,6 +150,7 @@ public:
 	bool isCgb() const { return ppu_.cgb(); }
 	bool isCgbDmg() const { return ppu_.cgbDmg(); }
 	bool isDoubleSpeed() const { return ppu_.lyCounter().isDoubleSpeed(); }
+	void setSpeedupFlags(unsigned flags) { ppu_.setSpeedupFlags(flags); }
 
 	unsigned long *bgPalette() { return ppu_.bgPalette(); }
 	unsigned long *spPalette() { return ppu_.spPalette(); }

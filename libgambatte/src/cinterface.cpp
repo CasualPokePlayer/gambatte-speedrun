@@ -210,4 +210,12 @@ GBEXPORT int gambatte_gethitinterruptaddress(GB *g) {
 	return g->getHitInterruptAddress();
 }
 
+GBEXPORT int gambatte_getdivstate(GB *g) {
+    return g->getDivState();
+}
+
+GBEXPORT void gambatte_setspeedupflags(GB *g, unsigned flags) {
+	g->setSpeedupFlags(flags);
+}
+
 }

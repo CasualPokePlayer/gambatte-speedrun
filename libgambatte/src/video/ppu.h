@@ -105,6 +105,7 @@ struct PPUPriv {
 	bool cgb;
 	bool cgbDmg;
 	bool weMaster;
+	unsigned speedupFlags;
 
 	PPUPriv(NextM0Time &nextM0Time, unsigned char const *oamram, unsigned char const *vram);
 };
@@ -150,6 +151,7 @@ public:
 	unsigned long * spPalette() { return p_.spPalette; }
 	void update(unsigned long cc);
 	void setLayers(unsigned mask) { p_.layersMask = mask; }
+	void setSpeedupFlags(unsigned flags) { p_.speedupFlags = flags; }
 
 private:
 	PPUPriv p_;

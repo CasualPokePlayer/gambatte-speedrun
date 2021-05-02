@@ -17,6 +17,7 @@
 //
 
 #include "sound.h"
+#include "gambatte.h"
 #include "savestate.h"
 #include <algorithm>
 #include <cstring>
@@ -53,6 +54,7 @@ PSG::PSG()
 , soVol_(0)
 , rsum_(0x8000) // initialize to 0x8000 to prevent borrows from high word, xor away later
 , enabled_(false)
+, speedupFlags_(0)
 {
 }
 
@@ -130,8 +132,10 @@ void PSG::generateSamples(unsigned long const cpuCc, bool const doubleSpeed) {
 	unsigned long const cycles = (cpuCc - lastUpdate_) >> (1 + doubleSpeed);
 	lastUpdate_ += cycles << (1 + doubleSpeed);
 
-	if (cycles)
-		accumulateChannels(cycles);
+	if (!(speedupFlags_ & GB::NO_SOUND)) {
+		if (cycles)
+			accumulateChannels(cycles);
+	}
 
 	bufferPos_ += cycles;
 }
@@ -227,4 +231,5 @@ SYNCFUNC(PSG)
 	NSS(soVol_);
 	NSS(rsum_);
 	NSS(enabled_);
+	NSS(speedupFlags_);
 }

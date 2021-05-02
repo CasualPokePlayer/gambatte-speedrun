@@ -40,6 +40,7 @@ public:
 	unsigned curRomBank() const { return cart_.curRomBank(); }
 	char const * romTitle() const { return cart_.romTitle(); }
 	int debugGetLY() const { return lcd_.debugGetLY(); }
+	unsigned getLy(unsigned long const cc);
 	void setStatePtrs(SaveState &state);
 	void saveRtcState(SaveState& state, unsigned long cc);
 	void loadState(SaveState const &state);
@@ -296,10 +297,19 @@ public:
 	void setTimeMode(bool useCycles, unsigned long const cc) {
 		cart_.setTimeMode(useCycles, cc);
 	}
+
 	void setRtcDivisorOffset(long const rtcDivisorOffset) { cart_.setRtcDivisorOffset(rtcDivisorOffset); }
 	
 	void getRtcRegs(unsigned long *dest, unsigned long cc) { cart_.getRtcRegs(dest, cc); }
 	void setRtcRegs(unsigned long *src) { cart_.setRtcRegs(src); }
+	
+    unsigned long getDivLastUpdate() { return divLastUpdate_; }
+    unsigned char getRawIOAMHRAM(int offset) { return ioamhram_[offset]; }
+
+	void setSpeedupFlags(unsigned flags) {
+		lcd_.setSpeedupFlags(flags);
+		psg_.setSpeedupFlags(flags);
+	}
 
 	int linkStatus(int which);
 

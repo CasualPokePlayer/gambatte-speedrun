@@ -71,6 +71,10 @@ Memory::~Memory() {
 	delete []bios_;
 }
 
+unsigned Memory::getLy(unsigned long const cc) {
+	return nontrivial_ff_read(0x44, cc);
+}
+
 void Memory::setStatePtrs(SaveState &state) {
 	state.mem.ioamhram.set(ioamhram_, sizeof ioamhram_);
 
@@ -1371,10 +1375,8 @@ bool Memory::getMemoryArea(int which, unsigned char **data, int *length) {
 	}
 }
 
-int Memory::linkStatus(int which)
-{
-	switch (which)
-	{
+int Memory::linkStatus(int which) {
+	switch (which) {
 	case 256: // ClockSignaled
 		return linkClockTrigger_;
 	case 257: // AckClockSignal
@@ -1386,8 +1388,7 @@ int Memory::linkStatus(int which)
 		LINKCABLE_ = true;
 		return 0;
 	default: // ShiftIn
-		if (ioamhram_[0x102] & 0x80) // was enabled
-		{
+		if (ioamhram_[0x102] & 0x80) { // was enabled
 			ioamhram_[0x101] = which;
 			ioamhram_[0x102] &= 0x7F;
 			intreq_.flagIrq(8);

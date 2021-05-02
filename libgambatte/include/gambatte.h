@@ -181,8 +181,26 @@ public:
 	  */
 	void setRtcRegs(unsigned long *src);
 
+	/**
+	  * Sets addresses the CPU will interrupt processing at before the instruction.
+	  * Format is 0xBBAAAA where AAAA is an address and BB is an optional ROM bank.
+	  */
 	void setInterruptAddresses(int *addrs, int numAddrs);
+	
+	/** Gets the address the CPU was interrupted at or -1 if stopped normally. */
 	int getHitInterruptAddress();
+	
+    /** Return a value in range 0-3FFF representing current "position" of internal divider */
+    int getDivState();
+	
+	enum SpeedupFlag {
+		NO_SOUND    = 1,  /**< Skip generating sound samples. */
+		NO_PPU_CALL = 2,  /**< Skip PPU calls. (breaks LCD interrupt) */
+		NO_VIDEO    = 4   /**< Skip writing to the video buffer. */
+	};
+
+	/** Sets flags to control non-critical processes for CPU-concerned emulation. */
+	void setSpeedupFlags(unsigned flags);
 
 	template<bool isReader>void SyncState(NewState *ns);
 

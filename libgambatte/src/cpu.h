@@ -112,6 +112,12 @@ public:
 	void setRtcRegs(unsigned long *src) { mem_.setRtcRegs(src); }
 	void setInterruptAddresses(int *addrs, int numAddrs);
 	int getHitInterruptAddress();
+	
+    unsigned long getCycleCounter() { return cycleCounter_; }
+    unsigned long getDivLastUpdate() { return mem_.getDivLastUpdate(); }
+    unsigned char getRawIOAMHRAM(int offset) { return mem_.getRawIOAMHRAM(offset); }
+	
+	void setSpeedupFlags(unsigned flags) { mem_.setSpeedupFlags(flags); }
 
 private:
 	Memory mem_;
