@@ -32,9 +32,9 @@ public:
 	void saveRtcState(SaveState& state);
 	void loadState(SaveState const &state);
 	void setLayers(unsigned mask) { mem_.setLayers(mask); }
-	void saveSavedata(char* dest, bool isDeterministic) { mem_.saveSavedata(dest, cycleCounter_, isDeterministic); }
-	void loadSavedata(char const *data, bool isDeterministic) { mem_.loadSavedata(data, cycleCounter_, isDeterministic); }
-	int saveSavedataLength(bool isDeterministic) { return mem_.saveSavedataLength(isDeterministic); }
+	void saveSaveData(char* dest, bool isDeterministic) { mem_.saveSaveData(dest, cycleCounter_, isDeterministic); }
+	void loadSaveData(char const *data, bool isDeterministic) { mem_.loadSaveData(data, cycleCounter_, isDeterministic); }
+	int getSaveDataLength(bool isDeterministic) { return mem_.getSaveDataLength(isDeterministic); }
 
 	bool getMemoryArea(int which, unsigned char **data, int *length) { return mem_.getMemoryArea(which, data, length); }
 
@@ -113,9 +113,9 @@ public:
 	void setInterruptAddresses(int *addrs, int numAddrs);
 	int getHitInterruptAddress();
 	
-    unsigned long getCycleCounter() { return cycleCounter_; }
-    unsigned long getDivLastUpdate() { return mem_.getDivLastUpdate(); }
-    unsigned char getRawIOAMHRAM(int offset) { return mem_.getRawIOAMHRAM(offset); }
+	unsigned long getCycleCounter() { return cycleCounter_; }
+	unsigned long getDivLastUpdate() { return mem_.getDivLastUpdate(); }
+	unsigned char getRawIOAMHRAM(int offset) { return mem_.getRawIOAMHRAM(offset); }
 	
 	void setSpeedupFlags(unsigned flags) { mem_.setSpeedupFlags(flags); }
 

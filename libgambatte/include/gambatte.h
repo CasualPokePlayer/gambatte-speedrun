@@ -142,17 +142,17 @@ public:
 	/** Writes persistent cartridge data to disk. NOT done implicitly on ROM close.
 	  * Deterministic emulation will ignore RTC data, if any.
 	  */
-	void saveSavedata(char* dest, bool isDeterministic);
+	void saveSaveData(char* dest, bool isDeterministic);
 
 	/** Loads persistent cartridge data from disk. 
 	  * Deterministic emulation will ignore RTC data, if any.
 	  */
-	void loadSavedata(char const *data, bool isDeterministic);
+	void loadSaveData(char const *data, bool isDeterministic);
 
 	/** Returns save data length expected.
 	  * Deterministic emulation will ignore RTC data, if any.
 	  */
-	int saveSavedataLength(bool isDeterministic);
+	int getSaveDataLength(bool isDeterministic);
 
 	/** 0 = vram, 1 = rom, 2 = wram, 3 = cartram, 4 = oam, 5 = hram */
 	bool getMemoryArea(int which, unsigned char **data, int *length);
@@ -190,9 +190,9 @@ public:
 	/** Gets the address the CPU was interrupted at or -1 if stopped normally. */
 	int getHitInterruptAddress();
 	
-    /** Return a value in range 0-3FFF representing current "position" of internal divider */
-    int getDivState();
-	
+	/** Return a value in range 0-3FFF representing current "position" of internal divider */
+	int getDivState();
+
 	enum SpeedupFlag {
 		NO_SOUND    = 1,  /**< Skip generating sound samples. */
 		NO_PPU_CALL = 2,  /**< Skip PPU calls. (breaks LCD interrupt) */

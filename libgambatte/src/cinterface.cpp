@@ -130,15 +130,15 @@ GBEXPORT int gambatte_isloaded(GB *g) {
 }
 
 GBEXPORT void gambatte_savesavedata(GB *g, char *dest, bool isDeterministic) {
-	g->saveSavedata(dest, isDeterministic);
+	g->saveSaveData(dest, isDeterministic);
 }
 
 GBEXPORT void gambatte_loadsavedata(GB *g, char const *data, bool isDeterministic) {
-	g->loadSavedata(data, isDeterministic);
+	g->loadSaveData(data, isDeterministic);
 }
 
-GBEXPORT int gambatte_savesavedatalength(GB *g, bool isDeterministic) {
-	return g->saveSavedataLength(isDeterministic);
+GBEXPORT int gambatte_getsavedatalength(GB *g, bool isDeterministic) {
+	return g->getSaveDataLength(isDeterministic);
 }
 
 GBEXPORT int gambatte_newstatelen(GB *g) {
@@ -211,7 +211,7 @@ GBEXPORT int gambatte_gethitinterruptaddress(GB *g) {
 }
 
 GBEXPORT int gambatte_getdivstate(GB *g) {
-    return g->getDivState();
+	return g->getDivState();
 }
 
 GBEXPORT void gambatte_setspeedupflags(GB *g, unsigned flags) {

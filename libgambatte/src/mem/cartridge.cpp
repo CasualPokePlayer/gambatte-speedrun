@@ -898,7 +898,7 @@ LoadRes Cartridge::loadROM(char const *romfiledata, unsigned romfilelength, bool
 
 enum { Dh = 0, Dl = 1, H = 2, M = 3, S = 4, C = 5, L = 6 };
 
-int Cartridge::saveSavedataLength(bool isDeterministic) {
+int Cartridge::getSaveDataLength(bool isDeterministic) {
 	int ret = 0;
 	if (hasBattery(memptrs_.romdata()[0x147])) {
 		ret = memptrs_.rambankdataend() - memptrs_.rambankdata();
@@ -909,7 +909,7 @@ int Cartridge::saveSavedataLength(bool isDeterministic) {
 	return ret;
 }
 
-void Cartridge::saveSavedata(char* dest, unsigned long const cc, bool isDeterministic) {
+void Cartridge::saveSaveData(char* dest, unsigned long const cc, bool isDeterministic) {
 	if (hasBattery(memptrs_.romdata()[0x147])) {
 		int length = memptrs_.rambankdataend() - memptrs_.rambankdata();
 		std::memcpy(dest, memptrs_.rambankdata(), length);
@@ -920,11 +920,11 @@ void Cartridge::saveSavedata(char* dest, unsigned long const cc, bool isDetermin
 		timeval basetime = time_.baseTime(cc, isHuC3());
 		*dest++ = (basetime.tv_sec  >> 24 & 0xFF);
 		*dest++ = (basetime.tv_sec  >> 16 & 0xFF);
-		*dest++ = (basetime.tv_sec  >> 8  & 0xFF);
+		*dest++ = (basetime.tv_sec  >>  8 & 0xFF);
 		*dest++ = (basetime.tv_sec        & 0xFF);
 		*dest++ = (basetime.tv_usec >> 24 & 0xFF);
 		*dest++ = (basetime.tv_usec >> 16 & 0xFF);
-		*dest++ = (basetime.tv_usec >> 8  & 0xFF);
+		*dest++ = (basetime.tv_usec >>  8 & 0xFF);
 		*dest++ = (basetime.tv_usec       & 0xFF);
 		if (!isHuC3()) {
 			unsigned long rtcRegs[11];
@@ -936,7 +936,7 @@ void Cartridge::saveSavedata(char* dest, unsigned long const cc, bool isDetermin
 			*dest++ = (rtcRegs[S]       & 0x3F);
 			*dest++ = (rtcRegs[C] >> 24 & 0xFF);
 			*dest++ = (rtcRegs[C] >> 16 & 0xFF);
-			*dest++ = (rtcRegs[C] >> 8  & 0xFF);
+			*dest++ = (rtcRegs[C] >>  8 & 0xFF);
 			*dest++ = (rtcRegs[C]       & 0xFF);
 			*dest++ = (rtcRegs[Dh+L]    & 0xC1);
 			*dest++ = (rtcRegs[Dl+L]    & 0xFF);
@@ -947,7 +947,7 @@ void Cartridge::saveSavedata(char* dest, unsigned long const cc, bool isDetermin
 	}
 }
 
-void Cartridge::loadSavedata(char const *data, unsigned long const cc, bool isDeterministic) {
+void Cartridge::loadSaveData(char const *data, unsigned long const cc, bool isDeterministic) {
 	if (hasBattery(memptrs_.romdata()[0x147])) {
 		int length = memptrs_.rambankdataend() - memptrs_.rambankdata();
 		std::memcpy(memptrs_.rambankdata(), data, length);

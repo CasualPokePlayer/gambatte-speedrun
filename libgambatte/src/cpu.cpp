@@ -512,7 +512,6 @@ void CPU::process(unsigned long const cycles) {
 				cycleCounter += cycles + (-cycles & 3);
 			}
 		} else while (cycleCounter < mem_.nextEventTime()) {
-			unsigned originalPc = pc;
 			unsigned char opcode;
 			unsigned char operandHigh;
 			unsigned char operandLow;

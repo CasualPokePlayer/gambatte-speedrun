@@ -44,9 +44,9 @@ public:
 	void setStatePtrs(SaveState &state);
 	void saveRtcState(SaveState& state, unsigned long cc);
 	void loadState(SaveState const &state);
-	void saveSavedata(char* dest, unsigned long const cc, bool isDeterministic) { cart_.saveSavedata(dest, cc, isDeterministic); }
-	void loadSavedata(char const *data, unsigned long const cc, bool isDeterministic) { cart_.loadSavedata(data, cc, isDeterministic); }
-	int saveSavedataLength(bool isDeterministic) { return cart_.saveSavedataLength(isDeterministic); }
+	void saveSaveData(char* dest, unsigned long const cc, bool isDeterministic) { cart_.saveSaveData(dest, cc, isDeterministic); }
+	void loadSaveData(char const *data, unsigned long const cc, bool isDeterministic) { cart_.loadSaveData(data, cc, isDeterministic); }
+	int getSaveDataLength(bool isDeterministic) { return cart_.getSaveDataLength(isDeterministic); }
 	void updateInput();
 
 	void setBios(char const *buffer, std::size_t size) {
@@ -299,12 +299,12 @@ public:
 	}
 
 	void setRtcDivisorOffset(long const rtcDivisorOffset) { cart_.setRtcDivisorOffset(rtcDivisorOffset); }
-	
+
 	void getRtcRegs(unsigned long *dest, unsigned long cc) { cart_.getRtcRegs(dest, cc); }
 	void setRtcRegs(unsigned long *src) { cart_.setRtcRegs(src); }
-	
-    unsigned long getDivLastUpdate() { return divLastUpdate_; }
-    unsigned char getRawIOAMHRAM(int offset) { return ioamhram_[offset]; }
+
+	unsigned long getDivLastUpdate() { return divLastUpdate_; }
+	unsigned char getRawIOAMHRAM(int offset) { return ioamhram_[offset]; }
 
 	void setSpeedupFlags(unsigned flags) {
 		lcd_.setSpeedupFlags(flags);

@@ -159,19 +159,19 @@ bool GB::isLoaded() const {
 	return p_->cpu.loaded();
 }
 
-void GB::saveSavedata(char *dest, bool isDeterministic) {
+void GB::saveSaveData(char *dest, bool isDeterministic) {
 	if (p_->cpu.loaded())
-		p_->cpu.saveSavedata(dest, isDeterministic);
+		p_->cpu.saveSaveData(dest, isDeterministic);
 }
 
-void GB::loadSavedata(char const* data, bool isDeterministic) {
+void GB::loadSaveData(char const* data, bool isDeterministic) {
 	if (p_->cpu.loaded())
-		p_->cpu.loadSavedata(data, isDeterministic);
+		p_->cpu.loadSaveData(data, isDeterministic);
 }
 
-int GB::saveSavedataLength(bool isDeterministic) {
+int GB::getSaveDataLength(bool isDeterministic) {
 	if (p_->cpu.loaded())
-		return p_->cpu.saveSavedataLength(isDeterministic);
+		return p_->cpu.getSaveDataLength(isDeterministic);
 	else
 		return -1;
 }
@@ -240,10 +240,10 @@ int GB::getHitInterruptAddress() {
 }
 
 int GB::getDivState() {
-    int cc = p_->cpu.getCycleCounter();
-    int divOff = cc - p_->cpu.getDivLastUpdate();
-    int div = p_->cpu.getRawIOAMHRAM(0x104);
-    return (((div << 8) + divOff) >> 2) & 0x3FFF;
+	int cc = p_->cpu.getCycleCounter();
+	int divOff = cc - p_->cpu.getDivLastUpdate();
+	int div = p_->cpu.getRawIOAMHRAM(0x104);
+	return (((div << 8) + divOff) >> 2) & 0x3FFF;
 }
 
 void GB::setSpeedupFlags(unsigned flags) {
