@@ -402,10 +402,10 @@ int main(int const argc, char *argv[]) {
 		}
 
 		if (file_ptr png = openFile(s + "_dmg08_cgb04c.png")) {
-			/*if (runPngTest(argv[i],  true,  true, *png)) {
+			if (runPngTest(argv[i],  true,  true, *png)) {
 				++totalNumTestsSucceeded;
 				++agbNumTestsSucceeded;
-			}*/
+			}
 			if (runPngTest(argv[i],  true, false, *png)) {
 				++totalNumTestsSucceeded;
 				++cgbNumTestsSucceeded;
