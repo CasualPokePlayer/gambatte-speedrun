@@ -401,7 +401,7 @@ int main(int const argc, char *argv[]) {
 			++dmgNumTestsRun;
 		}
 
-		if (file_ptr png = openFile(s + "_dmg08_cgb04c.png")) {
+		if (file_ptr png = openFile(s + "_dmg08_cgb04c.png")) { // TODO: confirm if agb is identical here
 			if (runPngTest(argv[i],  true,  true, *png)) {
 				++totalNumTestsSucceeded;
 				++agbNumTestsSucceeded;
@@ -419,17 +419,19 @@ int main(int const argc, char *argv[]) {
 			++cgbNumTestsRun;
 			++dmgNumTestsRun;
 		} else {
-			if (file_ptr p = openFile(s + "_cgb04c.png")) {
-				/*if (runPngTest(argv[i],  true,  true, *p)) {
+			if (file_ptr p = openFile(s + "_cgb04c.png")) { // FIXME: we need agb images
+				if (runPngTest(argv[i],  true,  true, *p)) {
 					++totalNumTestsSucceeded;
 					++agbNumTestsSucceeded;
-				}*/
+				}
+				++totalNumTestsSucceeded;
+				++agbNumTestsSucceeded;
+			}
+			if (file_ptr p = openFile(s + "_cgb04c.png")) {
 				if (runPngTest(argv[i],  true, false, *p)) {
 					++totalNumTestsSucceeded;
 					++cgbNumTestsSucceeded;
 				}
-				/*totalNumTestsRun += 2;
-				++agbNumTestsRun;*/
 				++totalNumTestsRun;
 				++cgbNumTestsRun;
 			}
