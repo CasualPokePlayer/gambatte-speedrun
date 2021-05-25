@@ -366,15 +366,15 @@ int main(int const argc, char *argv[]) {
 		char const *agbout = 0; // TODO: Actual AGB results
 
 		if (s.find("dmg08_cgb04c_out") != std::string::npos) {
-			dmgout = cgbout = agbout = "dmg08_cgb04c_out";
+			dmgout = cgbout /*= agbout*/ = "dmg08_cgb04c_out";
 		} else {
 			if (s.find("dmg08_out") != std::string::npos) {
 				dmgout = "dmg08_out";
 
 				if (s.find("cgb04c_out") != std::string::npos)
-					cgbout = agbout = "cgb04c_out";
+					cgbout = /*= agbout*/ = "cgb04c_out";
 			} else if (s.find("_out") != std::string::npos)
-				cgbout = agbout = "_out";
+				cgbout = /*= agbout*/ = "_out";
 		}
 		if (agbout) {
 			if (runStrTest(argv[i],  true,  true, agbout)) {
