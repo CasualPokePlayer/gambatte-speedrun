@@ -33,6 +33,7 @@ public:
 	explicit SourceUpdater(MediaSource &source)
 	: source_(source)
 	, samplesBuffered_(0)
+	, sgbSamplesBuffered_(0)
 	, spf_(0)
 	, ft_(1, 0)
 	, outsrate_(0)
@@ -43,7 +44,9 @@ public:
 
 	std::ptrdiff_t update(PixelBuffer const &pb);
 	std::size_t readSamples(qint16 *out, std::size_t insamples, bool alwaysResample);
+	std::size_t readSgbSamples(qint16 *out, std::size_t insamples, bool alwaysResample);
 	std::size_t samplesBuffered() const { return samplesBuffered_; }
+	std::size_t sgbSamplesBuffered() const { return sgbSamplesBuffered_; }
 	void setSpf(Rational const &spf) { spf_ = spf; reset(); }
 	void setFt(Rational const &ft) { ft_ = ft; reset(); }
 
@@ -55,6 +58,7 @@ public:
 
 	void setOutSampleRate(long outsrate) { setOutSampleRate(outsrate, resamplerNo_); }
 	std::size_t maxOut() const { return resampler_ ? resampler_->maxOut(sndInBuffer_.size()) : 0; }
+	std::size_t sgbMaxOut() const { return sgbResampler_ ? sgbResampler_->maxOut(sgbSndInBuffer_.size()) : 0; }
 	MediaSource & source() const { return source_; }
 	Rational spf() const { return spf_; }
 	Rational ft() const { return ft_; }
@@ -64,8 +68,11 @@ public:
 private:
 	MediaSource &source_;
 	scoped_ptr<Resampler> resampler_;
+	scoped_ptr<Resampler> sgbResampler_;
 	Array<quint32> sndInBuffer_;
+	Array<quint32> sgbSndInBuffer_;
 	std::size_t samplesBuffered_;
+	std::size_t sgbSamplesBuffered_;
 	Rational spf_;
 	Rational ft_;
 	long outsrate_;

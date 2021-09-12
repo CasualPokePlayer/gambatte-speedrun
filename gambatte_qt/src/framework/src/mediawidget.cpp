@@ -255,10 +255,11 @@ MediaWidget::MediaWidget(MediaSource &source, QWidget &parent)
 : QObject(&parent)
 , blitterContainer_(new BlitterContainer(&parent))
 , audioEngines_(makeAudioEngines(parent.winId()))
+, sgbAudioEngines_(makeAudioEngines(parent.winId()))
 , blitters_(makeBlitterWidgets(VideoBufferLocker(vbmut_), DwmControlHwndChange(dwmControl_)))
 , fullModeToggler_(getFullModeToggler(parent.winId()))
 , workerCallback_(new WorkerCallback(*this))
-, worker_(new MediaWorker(source, *audioEngines_.back(), 48000, 100, 100, 1,
+, worker_(new MediaWorker(source, *audioEngines_.back(), *sgbAudioEngines_.back(), 48000, 100, 100, 1,
                           *workerCallback_, this))
 , frameRateControl_(*worker_, blitters_.back())
 , cursorTimer_(new QTimer(this))

@@ -46,7 +46,7 @@ public:
 		virtual ~Callback() {}
 	};
 
-	MediaWorker(MediaSource &source, AudioEngine &ae, long aerate, int aelatency, int aevolume,
+	MediaWorker(MediaSource &source, AudioEngine &ae, AudioEngine &sgbAe, long aerate, int aelatency, int aevolume,
 	            std::size_t resamplerNo, Callback &callback, QObject *parent = 0);
 	MediaSource & source() const { return sourceUpdater_.source(); }
 	SyncVar & waitingForSync() { return waitingForSync_; }
@@ -186,14 +186,18 @@ private:
 	SourceUpdater sourceUpdater_;
 	Array<qint16> sndOutBuffer_;
 	scoped_ptr<AudioOut> ao_;
+	Array<qint16> sgbSndOutBuffer_;
+	scoped_ptr<AudioOut> sgbAo_;
 	long usecft_;
 	int threshold_;
 
 	friend class PushMediaWorkerCall;
 	long adaptToRateEstimation(long estft);
 	void adjustResamplerRate(long outRate);
+	void adjustSgbResamplerRate(long outRate);
 	std::ptrdiff_t sourceUpdate();
 	void initAudioEngine();
+	void initSgbAudioEngine();
 };
 
 template<class T>

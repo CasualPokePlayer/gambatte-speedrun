@@ -162,6 +162,7 @@ GambatteSource::GambatteSource()
 , resetCounter_(0)
 , resetFade_(1234567)
 , resetStall_(101 * (2 << 14))
+, cycleCounter_(0)
 , rng_(std::random_device()())
 , dist35112_(0, 35111)
 {
@@ -288,7 +289,7 @@ template<class T>
 static T * ptr_cast(void *p) { return static_cast<T *>(p); }
 
 std::ptrdiff_t GambatteSource::update(
-		PixelBuffer const &pb, qint16 *const soundBuf, std::size_t &samples) {
+		PixelBuffer const &pb, qint16 *const soundBuf, std::size_t &samples, qint16 *const sgbSoundBuf, std::size_t &sgbSamples) {
 	GbVidBuf const gbvidbuf = setPixelBuffer(getpbdata(pb, vsrci_), pb.pixelFormat, pb.pitch);
 	if (samples < overUpdate) {
 		samples = 0;
@@ -308,6 +309,12 @@ std::ptrdiff_t GambatteSource::update(
 	std::ptrdiff_t const vidFrameSampleNo =
 		runFor(gbvidbuf.pixels, gbvidbuf.pitch,
 		       ptr_cast<quint32>(soundBuf), samples);
+
+	quint64 cc = cycleCounter_ + samples;
+	if ((signed)gb_.generateSgbSamples(sgbSoundBuf, cc) >= 0)
+		sgbSamples = cc;
+	else
+		sgbSamples = 0;
 
 #ifdef ENABLE_INPUT_LOG
 	inputLog_.push(samples, inputGetter_.is);

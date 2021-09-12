@@ -107,7 +107,7 @@ public:
 	virtual void keyReleaseEvent(QKeyEvent const *);
 	virtual void joystickEvent(SDL_Event const &);
 	virtual void clearKeyPresses();
-	virtual std::ptrdiff_t update(PixelBuffer const &fb, qint16 *soundBuf, std::size_t &samples);
+	virtual std::ptrdiff_t update(PixelBuffer const &fb, qint16 *soundBuf, std::size_t &samples, qint16 *sgbSoundBuf, std::size_t &sgbSamples);
 	virtual void generateVideoFrame(PixelBuffer const &fb);
 
 public slots:
@@ -196,6 +196,7 @@ private:
 	signed resetCounter_;
 	unsigned resetFade_;
 	unsigned resetStall_;
+	quint64 cycleCounter_;
 
 	std::mt19937 rng_;
 	std::uniform_int_distribution<std::mt19937::result_type> dist35112_;

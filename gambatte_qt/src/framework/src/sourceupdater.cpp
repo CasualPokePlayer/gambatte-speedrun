@@ -36,14 +36,29 @@ void SourceUpdater::reset() {
 		sndInBuffer_.reset(maxin);
 		resampler_.reset(ResamplerInfo::get(resamplerNo_).create(insrate, outsrate_, maxin));
 	}
+
+	//long const sgbInsrate = static_cast<long>((ft_.reciprocal().toFloat() * spf_.toFloat() + 0.5f) / 65.0);
+	//std::size_t const sgbMaxin = (spf_.ceiled() + source_.overUpdate) / 65.0f;
+
+	sgbSndInBuffer_.reset(0);
+	sgbResampler_.reset();
+	sgbSamplesBuffered_ = 0;
+
+	if (insrate > 0 && outsrate_ > 0) {
+		sgbSndInBuffer_.reset(2048);
+		sgbResampler_.reset(ResamplerInfo::get(resamplerNo_).create(32000, outsrate_, 2048));
+	}
 }
 
 std::ptrdiff_t SourceUpdater::update(PixelBuffer const &pb) {
 	std::size_t updateSamples = sndInBuffer_.size() - samplesBuffered_;
+	std::size_t updateSgbSamples = 0;
 	std::ptrdiff_t vidFrameDoneSampleNo =
 		source_.update(pb, ptr_cast<qint16>(sndInBuffer_ + samplesBuffered_),
-		               updateSamples);
+		               updateSamples, ptr_cast<qint16>(sgbSndInBuffer_ + sgbSamplesBuffered_),
+		               updateSgbSamples);
 	samplesBuffered_ += updateSamples;
+	sgbSamplesBuffered_ += updateSgbSamples;
 	return vidFrameDoneSampleNo >= 0
 	     ? std::ptrdiff_t(samplesBuffered_ - updateSamples + vidFrameDoneSampleNo)
 	     : -1;
@@ -53,7 +68,7 @@ std::size_t SourceUpdater::readSamples(
 		qint16 *const out, std::size_t const insamples, bool const alwaysResample) {
 	std::size_t outsamples = 0;
 	samplesBuffered_ -= insamples;
-	if (out) {
+	if (out) {		
 		if (resampler_->inRate() == resampler_->outRate() && !alwaysResample) {
 			std::memcpy(out, sndInBuffer_, insamples * sizeof *sndInBuffer_);
 			outsamples = insamples;
@@ -65,5 +80,24 @@ std::size_t SourceUpdater::readSamples(
 
 	std::memmove(sndInBuffer_, sndInBuffer_ + insamples,
 	             samplesBuffered_ * sizeof *sndInBuffer_);
+	return outsamples;
+}
+
+std::size_t SourceUpdater::readSgbSamples(
+		qint16 *const out, std::size_t const insamples, bool const alwaysResample) {
+	std::size_t outsamples = 0;
+	sgbSamplesBuffered_ -= insamples;
+	if (out) {		
+		if (sgbResampler_->inRate() == sgbResampler_->outRate() && !alwaysResample) {
+			std::memcpy(out, sgbSndInBuffer_, insamples * sizeof *sgbSndInBuffer_);
+			outsamples = insamples;
+		} else {
+			outsamples = sgbResampler_->resample(out, ptr_cast<qint16>(sgbSndInBuffer_),
+			                                  insamples);
+		}
+	}
+
+	std::memmove(sgbSndInBuffer_, sgbSndInBuffer_ + insamples,
+	             sgbSamplesBuffered_ * sizeof *sgbSndInBuffer_);
 	return outsamples;
 }

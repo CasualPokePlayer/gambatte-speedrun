@@ -121,6 +121,7 @@ public:
 
 	void setAudioOut(std::size_t engineNo, long srateHz, int msecLatency, int volume, std::size_t resamplerNo) {
 		worker_->setAudioOut(*audioEngines_[engineNo], srateHz, msecLatency, volume, resamplerNo);
+		worker_->setAudioOut(*sgbAudioEngines_[engineNo], srateHz, msecLatency, volume, resamplerNo);
 	}
 
 	std::size_t numResamplers() const { return ResamplerInfo::num(); }
@@ -186,6 +187,7 @@ private:
 	QMutex vbmut_;
 	BlitterContainer *const blitterContainer_;
 	auto_vector<AudioEngine> const audioEngines_;
+	auto_vector<AudioEngine> const sgbAudioEngines_;
 	auto_vector<BlitterWidget> const blitters_;
 	scoped_ptr<FullModeToggler> const fullModeToggler_;
 	scoped_ptr<WorkerCallback> const workerCallback_;

@@ -138,7 +138,7 @@ void MediaWorker::PauseVar::waitWhilePaused(MediaWorker::Callback &cb, AudioOut 
 }
 
 MediaWorker::MediaWorker(MediaSource &source,
-                         AudioEngine &ae, long aerate, int aelatency, int aevolume,
+                         AudioEngine &ae, AudioEngine &sgbAe, long aerate, int aelatency, int aevolume,
                          std::size_t resamplerNo,
                          Callback &callback,
                          QObject *parent)
@@ -149,6 +149,7 @@ MediaWorker::MediaWorker(MediaSource &source,
 , doneVar_(true)
 , sourceUpdater_(source)
 , ao_(new AudioOut(ae, aerate, aelatency, aevolume, resamplerNo))
+, sgbAo_(new AudioOut(sgbAe, aerate, aelatency, aevolume, resamplerNo))
 , usecft_(0)
 , threshold_(8192)
 {
@@ -172,8 +173,10 @@ void MediaWorker::stop() {
 
 void MediaWorker::pause() {
 	pauseVar_.pause(PauseVar::pause_bit);
-	if (pauseVar_.waitingForUnpause())
+	if (pauseVar_.waitingForUnpause()) {
 		ao_->pause();
+		sgbAo_->pause();
+	}
 }
 
 void MediaWorker::initAudioEngine() {
@@ -193,9 +196,28 @@ void MediaWorker::initAudioEngine() {
 	}
 }
 
+void MediaWorker::initSgbAudioEngine() {
+	sgbAo_->init();
+	sgbSndOutBuffer_.reset(sourceUpdater_.sgbMaxOut() * 2);
+
+	if (!sgbAo_->successfullyInitialized()) {
+		pauseVar_.localPause(PauseVar::fail_bit);
+		callback_.audioEngineFailure();
+	}
+	else {
+		std::memset(sgbSndOutBuffer_, 0, sgbSndOutBuffer_.size() * sizeof *sgbSndOutBuffer_);
+		for (int i = 0; i < 4; i++)
+			sgbAo_->write(sgbSndOutBuffer_, sourceUpdater_.sgbMaxOut());
+	}
+}
+
 struct MediaWorker::ResetAudio {
 	MediaWorker &w;
 	void operator()() const {
+		if (w.sgbAo_->initialized() && !w.sgbAo_->flushPausedBuffers()) {
+			w.sgbAo_->uninit();
+			w.initSgbAudioEngine();
+		}
 		if (w.ao_->initialized() && !w.ao_->flushPausedBuffers()) {
 			w.ao_->uninit();
 			w.initAudioEngine();
@@ -213,11 +235,16 @@ struct MediaWorker::SetAudioOut {
 	std::size_t const resamplerNo;
 	void operator()() const {
 		bool const inited = w.ao_->initialized();
+		bool const sgbInited = w.sgbAo_->initialized();
 		w.ao_.reset();
 		w.ao_.reset(new AudioOut(ae, rate, latency, volume, resamplerNo));
+		w.sgbAo_.reset();
+		w.sgbAo_.reset(new AudioOut(ae, rate, latency, volume, resamplerNo));
 
-		if (inited)
+		if (inited && sgbInited) {
+			w.initSgbAudioEngine();
 			w.initAudioEngine();
+		}
 	}
 };
 
@@ -233,6 +260,7 @@ struct MediaWorker::SetFrameTime {
 			w.usecft_ = static_cast<long>(ft.toFloat() * 1000000.0f + 0.5f);
 			w.sourceUpdater_.setFt(ft);
 			w.sndOutBuffer_.reset(w.sourceUpdater_.maxOut() * 2);
+			w.sgbSndOutBuffer_.reset(w.sourceUpdater_.sgbMaxOut() * 2);
 		}
 	}
 };
@@ -248,6 +276,7 @@ struct MediaWorker::SetSamplesPerFrame {
 		if (w.sourceUpdater_.spf() != spf) {
 			w.sourceUpdater_.setSpf(spf);
 			w.sndOutBuffer_.reset(w.sourceUpdater_.maxOut() * 2);
+			w.sgbSndOutBuffer_.reset(w.sourceUpdater_.sgbMaxOut() * 2);
 		}
 	}
 };
@@ -404,13 +433,16 @@ void MediaWorker::run() {
 		MediaWorker &w_;
 	public:
 		explicit AoInit(MediaWorker &w) : w_(w) {
+			w.initSgbAudioEngine();
 			w.initAudioEngine();
 		}
 
 		~AoInit() {
 			w_.ao_->uninit();
+			w_.sgbAo_->uninit();
 			w_.sourceUpdater_.setOutSampleRate(0);
 			w_.sndOutBuffer_.reset(0);
+			w_.sgbSndOutBuffer_.reset(0);
 		}
 	} aoinit(*this);
 	SetThreadPriorityAudio const setmmprio;
@@ -431,6 +463,10 @@ void MediaWorker::run() {
 			                                ? blitSamples
 			                                : sourceUpdater_.samplesBuffered();
 			sourceUpdater_.readSamples(0, sourceSamplesToRead, ftEst != 0);
+			std::size_t sourceSgbSamplesToRead = blitSamples >= 0
+			                                ? blitSamples / 65
+			                                : sourceUpdater_.sgbSamplesBuffered();
+			sourceUpdater_.readSgbSamples(0, sourceSgbSamplesToRead, ftEst != 0);
 		} else {
 			long const syncft = blitSamples >= 0 ? adaptToRateEstimation(ftEst) : 0;
 			bool const blit   = blitSamples >= 0 && !skipSched.skipNext(audioBufLow);
@@ -442,11 +478,21 @@ void MediaWorker::run() {
 				sourceUpdater_.readSamples(sndOutBuffer_, 
 				                   blit ? blitSamples : sourceUpdater_.samplesBuffered(),
 				                   ftEst != 0);
+			std::size_t const sgbOutsamples =
+				sourceUpdater_.readSgbSamples(sgbSndOutBuffer_,
+				                   blit ? blitSamples / 65 : sourceUpdater_.sgbSamplesBuffered(),
+				                   ftEst != 0);
 			AudioEngine::BufferState bstate = { AudioEngine::BufferState::not_supported,
 			                                    AudioEngine::BufferState::not_supported };
 			if (ao_->successfullyInitialized()
 					&& ao_->write(sndOutBuffer_, outsamples, bstate) < 0) {
 				ao_->pause();
+				pauseVar_.pause(PauseVar::fail_bit);
+				callback_.audioEngineFailure();
+			}
+			if (sgbAo_->successfullyInitialized()
+					&& sgbAo_->write(sgbSndOutBuffer_, sgbOutsamples, bstate) < 0) {
+				sgbAo_->pause();
 				pauseVar_.pause(PauseVar::fail_bit);
 				callback_.audioEngineFailure();
 			}
@@ -468,6 +514,10 @@ bool MediaWorker::frameStep() {
 		sourceUpdater_.readSamples(sndOutBuffer_,
 			blitSamples >= 0 ? blitSamples : sourceUpdater_.samplesBuffered(),
 			AtomicVar<long>::ConstLocked(frameTimeEst_).get() != 0);
+	std::size_t const sgbOutsamples =
+		sourceUpdater_.readSgbSamples(sgbSndOutBuffer_,
+			blitSamples >= 0 ? blitSamples / 65 : sourceUpdater_.sgbSamplesBuffered(),
+			AtomicVar<long>::ConstLocked(frameTimeEst_).get() != 0);
 	if (ao_->successfullyInitialized()) {
 		if (ao_->write(sndOutBuffer_, outsamples) < 0) {
 			ao_->pause();
@@ -475,6 +525,14 @@ bool MediaWorker::frameStep() {
 			callback_.audioEngineFailure();
 		} else
 			ao_->pause();
+	}
+	if (sgbAo_->successfullyInitialized()) {
+		if (sgbAo_->write(sgbSndOutBuffer_, sgbOutsamples) < 0) {
+			sgbAo_->pause();
+			pauseVar_.pause(PauseVar::fail_bit);
+			callback_.audioEngineFailure();
+		} else
+			sgbAo_->pause();
 	}
 
 	return blitSamples >= 0;

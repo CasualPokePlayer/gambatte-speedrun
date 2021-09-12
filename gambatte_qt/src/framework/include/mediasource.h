@@ -73,11 +73,14 @@ public:
 	  * @param soundBuf Audio buffer to write 16-bit stereo samples to. 32-bit aligned.
 	  * @param samples  In: Size of soundBuf in number of stereo samples.
 	  *                Out: Number of stereo samples written to soundBuf.
+	  * @param sgbSoundBuf Audio buffer to write 16-bit stereo samples to. 32-bit aligned.
+	  * @param sgbSamples  Out: Number of stereo samples written to sgbSoundBuf.
 	  * @return The number of stereo samples that should be output before the video frame is
 	  '         displayed. Or a negative number if no new video frame should be displayed.
 	  */
 	virtual std::ptrdiff_t update(PixelBuffer const &frameBuf,
-	                              qint16 *soundBuf, std::size_t &samples) = 0;
+	                              qint16 *soundBuf, std::size_t &samples,
+	                              qint16 *sgbSoundBuf, std::size_t &sgbSamples) = 0;
 
 	/**
 	  * This is called after update returns, but only when it is clear that the frame will not
