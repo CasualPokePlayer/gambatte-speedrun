@@ -68,7 +68,7 @@ std::size_t SourceUpdater::readSamples(
 		qint16 *const out, std::size_t const insamples, bool const alwaysResample) {
 	std::size_t outsamples = 0;
 	samplesBuffered_ -= insamples;
-	if (out) {		
+	if (out) {
 		if (resampler_->inRate() == resampler_->outRate() && !alwaysResample) {
 			std::memcpy(out, sndInBuffer_, insamples * sizeof *sndInBuffer_);
 			outsamples = insamples;
