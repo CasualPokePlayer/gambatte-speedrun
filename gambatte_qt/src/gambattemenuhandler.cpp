@@ -651,7 +651,7 @@ void GambatteMenuHandler::loadFile(QString const &fileName) {
 	if (miscDialog_->multicartCompat())
 		flags |= gambatte::GB::MULTICART_COMPAT;
 
-	QString biosFilename = settings.value(info.key, "").toString();
+	/*QString biosFilename = settings.value(info.key, "").toString();
 	if(biosFilename.isEmpty() ||
 			source_.loadBios(biosFilename.toLocal8Bit().constData(), info.size, info.crc) != 0) {
 		mw_.stop();
@@ -669,7 +669,8 @@ void GambatteMenuHandler::loadFile(QString const &fileName) {
 		if (button == QMessageBox::Open)
 			openBios(info);
 		return;
-	}
+	}*/
+	flags |= gambatte::GB::NO_BIOS;
 	
 	std::cout << "Loading rom..." << std::endl;
 
