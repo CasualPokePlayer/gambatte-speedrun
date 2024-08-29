@@ -1,4 +1,4 @@
-# This project has been superseded by the [GSR emulator](https://github.com/CasualPokePlayer/GSR).
+# This project has been superseded by the [GSE emulator](https://github.com/CasualPokePlayer/GSE).
 ----
 # Gambatte-Speedrun
 
